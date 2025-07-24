@@ -4,11 +4,14 @@ services:
     build: .
     ports:
       - "3000:3000"
+    environment:
+      - DB_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASS}@postgres:POSTGRES_PORT/${POSTGRES_NAME}   
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
-      - redis   
+      - redis  
+      - postgres 
     command: npm run dev
 
   redis:
@@ -18,5 +21,20 @@ services:
     volumes:
       - redis_data:/data  
 
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_NAME}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  
+    
+
 volumes:
-  redis_data:     
+  redis_data: 
+  postgres_data:    
