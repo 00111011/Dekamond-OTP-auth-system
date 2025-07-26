@@ -5,7 +5,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DB_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASS}@postgres:POSTGRES_PORT/${POSTGRES_NAME}   
+      - POSTGRES_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASS}@postgres:5432/${POSTGRES_NAME}   
     volumes:
       - .:/app
       - /app/node_modules
@@ -24,11 +24,9 @@ services:
   postgres:
     image: postgres:13-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASS}
-      POSTGRES_DB: ${POSTGRES_NAME}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASS}
+        POSTGRES_DB: ${POSTGRES_NAME}
     ports:
       - "5432:5432"
     volumes:
