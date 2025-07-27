@@ -1,7 +1,7 @@
 require('dotenv').config();
 const redisClient = require('../configs/redis.config.js');
 const {generateOtp} = require('../utils/otp-generator');
-const { OtpRequest} = require('../models');
+const { OtpRequest , User} = require('../models');
 const {sendOtp} = require('./sms-services.js');
 
 const OTP_MAX_REQUESTS = Number(process.env.OTP_MAX_REQUESTS || 3);
@@ -53,4 +53,14 @@ async function logOtp(userId) {
 
 async function sendSMS(phone , code) {
   await sendOtp(phone, code);
+}
+
+  async function findOrCreateByPhone(phone) {
+    const user = await User.findOne({ where: { phone_number: phone  } });
+    if (user) return { user};
+
+    const newUser = await User.create({ 
+      phone_number : phone,
+    });
+    return { user: newUser};
 }
