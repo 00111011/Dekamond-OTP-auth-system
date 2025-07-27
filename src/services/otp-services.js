@@ -1,6 +1,7 @@
 require('dotenv').config();
 const redisClient = require('../configs/redis.config.js');
 const {generateOtp} = require('../utils/otp-generator');
+const { OtpRequest } = require('../models');
 
 const OTP_MAX_REQUESTS = Number(process.env.OTP_MAX_REQUESTS || 3);
 const OTP_BLOCK_SECONDS = Number(process.env.OTP_BLOCK_SECONDS || 600);
@@ -41,4 +42,10 @@ async function createOtp(phone) {
   const code = generateOtp();
   await redisClient.set(otp, code, 'EX', OTP_TTL_SECONDS);
   return code;
+}
+
+async function logOtp(userId) {
+  await OtpRequest.create({
+    user_id: userId,
+    request_date: new Date()});
 }
