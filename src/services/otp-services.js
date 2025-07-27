@@ -1,4 +1,9 @@
+require('dotenv').config();
 const redisClient = require('../configs/redis.config.js');
+
+const OTP_MAX_REQUESTS = Number(process.env.OTP_MAX_REQUESTS || 3);
+const OTP_BLOCK_SECONDS = Number(process.env.OTP_BLOCK_SECONDS || 600);
+
 
 const redisKeys = (phone) => ({
   otp: `otp:${phone}`,
@@ -16,4 +21,16 @@ async function checkStatus(phone) {
 
   if (block) throw new Error('User is temporarily blocked');
   if (otp) throw new Error('An active OTP already exists');
+}
+
+async function handleRequestCount(phone) {
+  const keys = redisKeys(phone);
+  const count = await  redisClient.incr(keys.count);
+  if (count === 1) {
+    await  redisClient.expire(keys.count, OTP_BLOCK_SECONDS); 
+  }
+  if (count >= OTP_MAX_REQUESTS) {
+    await  redisClient.set(keys.block, '1', 'EX', OTP_BLOCK_SECONDS);
+    throw new Error('Too many requests. User is now blocked');
+  }
 }
