@@ -1,4 +1,4 @@
-const {requestOtpService} = require('../services/otp-services.js');
+const {requestOtpService , verifyOtpService} = require('../services/otp-services.js');
 
 const requestOtpController = async (req, res) => {
   try {
@@ -13,4 +13,38 @@ const requestOtpController = async (req, res) => {
   }
 };
 
-module.exports = {requestOtpController};
+async function verifyOtpController (req, res){
+  try {
+    const { phone, otp } = req.body;    
+    if (!phone || !otp) {
+      return res.status(400).json({
+        error: 'Phone and OTP are required'
+      });
+    }
+
+    const result = await verifyOtpService(phone, otp);
+
+    if (!result.token) {
+      throw new Error('Token not generated');
+    }
+    res.status(200).json({
+      success: true,
+      token: result.token,
+      user: result.user,
+    });
+ 
+
+
+  } catch (error) {
+    let statusCode = 400;
+    
+    if (error.message === 'OTP expired or not requested') statusCode = 410;
+    if (error.message === 'Incorrect OTP') statusCode = 401;
+    res.status(statusCode).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+module.exports = {requestOtpController , verifyOtpController};
