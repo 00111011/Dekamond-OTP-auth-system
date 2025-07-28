@@ -1,0 +1,16 @@
+const {requestOtpService} = require('../services/otp-services.js');
+
+const requestOtpController = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Phone number is required' });
+
+    await requestOtpService(phone);
+
+    return res.status(200).json({ message: 'OTP requested successfully' });
+  } catch (err) {
+    return res.status(429).json({ error: err.message });
+  }
+};
+
+module.exports = {requestOtpController};
