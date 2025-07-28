@@ -1,7 +1,7 @@
 require('dotenv').config();
 const redisClient = require('../configs/redis.config.js');
 const {generateOtp} = require('../utils/otp-generator');
-const { OtpRequest , User , sequelize } = require('../models');
+const { OtpRequest , User , LoginHistory , sequelize } = require('../models');
 const {sendOtp} = require('./sms-services.js');
 
 const OTP_MAX_REQUESTS = Number(process.env.OTP_MAX_REQUESTS || 3);
@@ -74,6 +74,13 @@ async function sendSMS(phone , code) {
 const deleteOtp = async (phone) => {
   await redisClient.del(redisKeys(phone).otp);
 };
+
+async function logLoginHistory(userId) {
+  await LoginHistory.create({
+    user_id: userId});
+}
+
+
 
 async function requestOtpService(phone_number) {
   const transaction = await sequelize.transaction();
