@@ -1,0 +1,12 @@
+const express = require('express');
+const authRoutes = express.Router();
+
+const validatePhone = require('../middlewares/validate-phone');
+const { requestOtpController } = require('../controllers/auth-controller');
+
+// POST /auth/request-otp
+authRoutes.post('/request-otp', validatePhone, requestOtpController);
+
+module.exports = authRoutes;
+
+
