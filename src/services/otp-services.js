@@ -64,6 +64,13 @@ async function sendSMS(phone , code) {
     });
     return { user: newUser};
 }
+
+  async function validateOtp (phone, otp){
+  const logedOtp = await redisClient.get(redisKeys(phone).otp);
+  if (!logedOtp) throw new Error('OTP expired or not requested');
+  if (logedOtp !== otp) throw new Error('Incorrect OTP');
+};
+
 async function requestOtpService(phone_number) {
   const transaction = await sequelize.transaction();
   try {
