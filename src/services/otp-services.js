@@ -71,6 +71,10 @@ async function sendSMS(phone , code) {
   if (logedOtp !== otp) throw new Error('Incorrect OTP');
 };
 
+const deleteOtp = async (phone) => {
+  await redisClient.del(redisKeys(phone).otp);
+};
+
 async function requestOtpService(phone_number) {
   const transaction = await sequelize.transaction();
   try {
