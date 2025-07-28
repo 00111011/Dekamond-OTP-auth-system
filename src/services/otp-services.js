@@ -3,6 +3,7 @@ const redisClient = require('../configs/redis.config.js');
 const {generateOtp} = require('../utils/otp-generator');
 const { OtpRequest , User , LoginHistory , sequelize } = require('../models');
 const {sendOtp} = require('./sms-services.js');
+const { generateToken } = require('./jwt-services.js');
 
 const OTP_MAX_REQUESTS = Number(process.env.OTP_MAX_REQUESTS || 3);
 const OTP_BLOCK_SECONDS = Number(process.env.OTP_BLOCK_SECONDS || 600);
@@ -80,6 +81,25 @@ async function logLoginHistory(userId) {
     user_id: userId});
 }
 
+async function verifyOtpService(phone, otp) {
+  const transaction = await sequelize.transaction();
+  try {
+    await validateOtp(phone, otp);
+    await deleteOtp(phone);
+    const {user} = await findOrCreateByPhone(phone, { transaction });
+    await logLoginHistory(user.id, { transaction });
+    const token =  await generateToken({ id: user.id, phone: user.phone_number });
+    await transaction.commit();
+    return {
+      token,
+      message: 'Login successful',
+      user
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+}
 
 
 async function requestOtpService(phone_number) {
@@ -100,4 +120,4 @@ async function requestOtpService(phone_number) {
   }
 }
 
-module.exports = {requestOtpService};
+module.exports = {requestOtpService , verifyOtpService };
